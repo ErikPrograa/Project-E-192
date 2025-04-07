@@ -56,7 +56,10 @@ public class PlayerController : MonoBehaviour
         SetUpJumpVariables();
 
     }
-
+    public Vector3 GetCurrentVelocity()
+    {
+        return rb.velocity;
+    }
     void SetUpJumpVariables()
     {
         float timeToApex = maxJumpTime / 2;
@@ -123,7 +126,7 @@ public class PlayerController : MonoBehaviour
         if (moveDirection.sqrMagnitude > 1f)
             moveDirection.Normalize();
 
-        targetHorizontalVelocity = moveDirection*runningSpeed*Time.deltaTime;
+        targetHorizontalVelocity = moveDirection*runningSpeed;
     }
     void HandleJump()
     {

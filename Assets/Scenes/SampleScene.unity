@@ -304,8 +304,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 685957847}
-  offset: {x: 0, y: 2.5, z: -16}
-  smoothSpeed: 2
+  offset: {x: 0, y: 4, z: -11}
+  smoothSpeed: 0.21
   sensitivity: 120
 --- !u!1 &410087039
 GameObject:
@@ -665,11 +665,11 @@ MonoBehaviour:
   groundCheckLayerMask:
     serializedVersion: 2
     m_Bits: 8
-  runningSpeed: 2000
-  walkSpeed: 2000
+  runningSpeed: 15
+  walkSpeed: 15
   rotationSpeed: 10
   initialJumpVelocity: 0
-  maxJumpHeight: 40
+  maxJumpHeight: 70
   maxJumpTime: 5
   isJumping: 0
   maxFallingSpeed: 0

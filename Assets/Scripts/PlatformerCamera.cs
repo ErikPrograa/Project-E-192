@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 public class PlatformerCamera : MonoBehaviour
 {
     public Transform target;
     public Vector3 offset = new Vector3(0, 3, -6);
-    public float smoothSpeed = 0.1f;
+    public float smoothSpeed = 0.2f;
     public float sensitivity = 120f;
 
     private float rotationY;
@@ -24,36 +23,30 @@ public class PlatformerCamera : MonoBehaviour
     }
     private void Update()
     {
-
-        /* rotationY += Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
-         rotationX += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
-         rotationY = Mathf.Clamp(rotationY, -60f, 60f);*/
+        rotationY -= Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
+        rotationX += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
+        rotationY = Mathf.Clamp(rotationY, -60f, 60f);
+        HandleCameraFollowPlaye();
     }
     private void FixedUpdate()
     {
-        HandleCameraFollowPlayer();
+        Quaternion rotation = Quaternion.Euler(rotationY, rotationX, 0);
+        Vector3 desiredPosition = target.position + rotation * offset;
+        transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
 
     }
     private void LateUpdate()
     {
         HandleCameraRotation();
+
     }
 
-    void HandleCameraFollowPlayer()
+    void HandleCameraFollowPlaye()
     {
-        if(InputManager.Instance.movementInput.y !=0)
-        {
-            Debug.Log("Player is moving vertically");
-            transform.position = Vector3.Lerp(transform.position, target.position + offset,Time.deltaTime);
-        }
-        transform.position = Vector3.Lerp(transform.position,new Vector3(transform.position.x,target.position.y +offset.y, target.position.z + offset.z), 2f* Time.deltaTime);
     }
 
     void HandleCameraRotation()
     {
-        /*Quaternion rotation = Quaternion.Euler(rotationY, rotationX, 0);
-        Vector3 desiredPosition = target.position + rotation * offset;
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);*/
         transform.LookAt(target.position + Vector3.up * 1.5f);
     }
 }

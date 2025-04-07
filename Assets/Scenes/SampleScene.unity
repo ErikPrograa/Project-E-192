@@ -304,8 +304,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 685957847}
-  offset: {x: 0, y: 3, z: -6}
-  smoothSpeed: 0.1
+  offset: {x: 0, y: 2.5, z: -16}
+  smoothSpeed: 2
   sensitivity: 120
 --- !u!1 &410087039
 GameObject:
@@ -593,6 +593,11 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 351863e2df8fcf54097b6f066963863e, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 438a9226f8c8a9049aa921e21ad28c91,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -656,20 +661,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 330585545}
   groundCheckTransform: {fileID: 36847841}
-  groundCheckRadius: 0.1
+  groundCheckRadius: 0.09
   groundCheckLayerMask:
     serializedVersion: 2
     m_Bits: 8
-  runningSpeed: 300
-  walkSpeed: 300
+  runningSpeed: 2000
+  walkSpeed: 2000
   rotationSpeed: 10
   initialJumpVelocity: 0
-  maxJumpHeight: 10
-  maxJumpTime: 3
+  maxJumpHeight: 40
+  maxJumpTime: 5
   isJumping: 0
-  gravity: -2
-  groundedGravity: -0.05
+  maxFallingSpeed: 0
   timeToStartRunning: 0
+  timeToLongFall: 5
 --- !u!114 &1441958089
 MonoBehaviour:
   m_ObjectHideFlags: 0

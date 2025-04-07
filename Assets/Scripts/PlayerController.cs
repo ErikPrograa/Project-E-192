@@ -23,19 +23,24 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float rotationSpeed;
 
     [SerializeField] float initialJumpVelocity;
-    [SerializeField] float maxJumpHeight= 1.0f;
-    [SerializeField] float maxJumpTime= 0.5f;
+    [SerializeField] float maxJumpHeight;
+    [SerializeField] float maxJumpTime;
     [SerializeField] bool isJumping;
+    [SerializeField] float maxFallingSpeed;
     // Gravity variables
-    [SerializeField] float gravity = -2f;
-    [SerializeField] float groundedGravity = -0.05f;
+    float gravity = -2f;
+    float groundedGravity = -0.05f;
 
     [Header("Timers")]
     [SerializeField] float timeToStartRunning;
-    [Header("Player Flags")]
-    bool isGrouded;
-    bool canJump =true;
+    [SerializeField] float timeToLongFall;
+    float currentTimeToLongFall;
 
+    [Header("Player Flags")]
+    bool isGrounded;
+    bool isLongFalling;
+    bool canJump =true;
+    bool isFalling;
 
     [Header("Movement Vectors | Values")]
     float targetVerticalVelocity;
@@ -46,7 +51,10 @@ public class PlayerController : MonoBehaviour
     {
         audioSource = GetComponentInChildren(typeof(AudioSource)) as AudioSource;
         rb= GetComponent<Rigidbody>();
+        currentTimeToLongFall = timeToLongFall;
+
         SetUpJumpVariables();
+
     }
 
     void SetUpJumpVariables()
@@ -54,6 +62,7 @@ public class PlayerController : MonoBehaviour
         float timeToApex = maxJumpTime / 2;
         gravity = (-2 * maxJumpHeight) / Mathf.Pow(timeToApex, 2);
         initialJumpVelocity = (2 * maxJumpHeight) / timeToApex;
+        maxFallingSpeed = -initialJumpVelocity;
     }
     private void Start()
     {
@@ -68,8 +77,8 @@ public class PlayerController : MonoBehaviour
         HandlePlayerRotation();
         HandleAnimations();
         HandleJump();
+        HandleTimers();
 
-        Debug.Log(targetVerticalVelocity);
     }
     private void FixedUpdate()
     {
@@ -78,17 +87,34 @@ public class PlayerController : MonoBehaviour
     private void HandleAnimations()
     {
         animationManager.SetAnimatorFloat("MovementSpeed",InputManager.Instance.movementInput.magnitude,0.1f);
+        animationManager.SetAnimatorBool("IsJumping",isJumping || !isGrounded);
+        animationManager.SetAnimatorBool("IsLongFalling", isLongFalling);
+        
     }
     private void HandleGravity()
     {
-        if (isGrouded)
+        isFalling = rb.velocity.y <= 0.0f || !inputManager.isJumpButtonPressed;
+        float fallMultiplier = 5.0f;
+        if (isGrounded)
         {
             targetVerticalVelocity = groundedGravity;
+            isLongFalling = false;
 
+        } 
+        else if (isFalling)
+        {
+            float previousYVelocity = targetVerticalVelocity;
+            float newYVelocity = targetVerticalVelocity + (gravity * fallMultiplier * Time.deltaTime);
+            float nextYVelocity = (previousYVelocity + newYVelocity) *.5f;
+            targetVerticalVelocity = nextYVelocity;
+            
         }
         else
         {
-            targetVerticalVelocity += gravity * Time.deltaTime;
+            float previousYVelocity = targetVerticalVelocity;
+            float newYVelocity = targetVerticalVelocity + (gravity * Time.deltaTime);
+            float nextYVelocity = (previousYVelocity + newYVelocity) * 0.5f;
+            targetVerticalVelocity = nextYVelocity;
         }
     }
     void HandleMovement()
@@ -101,16 +127,17 @@ public class PlayerController : MonoBehaviour
     }
     void HandleJump()
     {
-        if(!isJumping && isGrouded && inputManager.isJumpButtonPressed)
+        if(!isJumping && isGrounded && inputManager.isJumpButtonPressed)
         {
             isJumping = true;
-            targetVerticalVelocity = initialJumpVelocity;
+            targetVerticalVelocity = initialJumpVelocity *0.5f;
         }
-        else if(!inputManager.isJumpButtonPressed && isJumping && isGrouded)
+        else if(!inputManager.isJumpButtonPressed && isJumping && isGrounded)
         {
             isJumping = false;
 
         }
+
     }
     void HandlePlayerRotation()
     {
@@ -119,11 +146,28 @@ public class PlayerController : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(targetHorizontalVelocity);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
         }
+    }
 
+    void HandleTimers()
+    {
+        if (isFalling)
+        {
+            currentTimeToLongFall -= Time.deltaTime;
+            if (currentTimeToLongFall < 0 && !isLongFalling)
+            {
+                currentTimeToLongFall = timeToLongFall;
+                isLongFalling = true;
+            }
+        }
     }
     void UpdatePhysics()
     {
-        rb.velocity = new Vector3(targetHorizontalVelocity.x, rb.velocity.y +targetVerticalVelocity, targetHorizontalVelocity.z);
+        float appliedVelocity = rb.velocity.y + targetVerticalVelocity;
+        if(appliedVelocity < (maxFallingSpeed))
+        {
+            appliedVelocity = maxFallingSpeed;
+        }
+        rb.velocity = new Vector3(targetHorizontalVelocity.x, appliedVelocity, targetHorizontalVelocity.z);
         HandleGravity();
     }
 
@@ -141,6 +185,6 @@ public class PlayerController : MonoBehaviour
 
     void GroundCheck()
     {
-        isGrouded = Physics.CheckSphere(groundCheckTransform.position, groundCheckRadius, groundCheckLayerMask);
+        isGrounded = Physics.CheckSphere(groundCheckTransform.position, groundCheckRadius, groundCheckLayerMask);
     }
 }

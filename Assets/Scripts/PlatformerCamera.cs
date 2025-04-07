@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlatformerCamera : MonoBehaviour
@@ -27,16 +28,25 @@ public class PlatformerCamera : MonoBehaviour
         /* rotationY += Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
          rotationX += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
          rotationY = Mathf.Clamp(rotationY, -60f, 60f);*/
-        HandleCameraFollowPlaye();
+    }
+    private void FixedUpdate()
+    {
+        HandleCameraFollowPlayer();
+
     }
     private void LateUpdate()
     {
         HandleCameraRotation();
     }
 
-    void HandleCameraFollowPlaye()
+    void HandleCameraFollowPlayer()
     {
-        transform.position = Vector3.Lerp(transform.position,target.position + offset,Time.deltaTime);
+        if(InputManager.Instance.movementInput.y !=0)
+        {
+            Debug.Log("Player is moving vertically");
+            transform.position = Vector3.Lerp(transform.position, target.position + offset,Time.deltaTime);
+        }
+        transform.position = Vector3.Lerp(transform.position,new Vector3(transform.position.x,target.position.y +offset.y, target.position.z + offset.z), 2f* Time.deltaTime);
     }
 
     void HandleCameraRotation()

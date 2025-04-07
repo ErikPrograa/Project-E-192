@@ -27,4 +27,14 @@ public class AnimationManager : MonoBehaviour
     {
         animator.SetFloat(paramName,value,damp,Time.deltaTime);
     }
+
+    public void SetAnimatorBool(string paramName, bool value)
+    {
+        animator.SetBool(paramName, value);
+    }
+
+    public void PlayCrossFade(string animName)
+    {
+        animator.CrossFade(animName, 0.2f);
+    }
 }

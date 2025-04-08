@@ -595,6 +595,16 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: 351863e2df8fcf54097b6f066963863e, type: 2}
     - target: {fileID: 5866666021909216657, guid: 438a9226f8c8a9049aa921e21ad28c91,
         type: 3}
+      propertyPath: m_UpdateMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 438a9226f8c8a9049aa921e21ad28c91,
+        type: 3}
+      propertyPath: m_CullingMode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 438a9226f8c8a9049aa921e21ad28c91,
+        type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
@@ -673,6 +683,13 @@ MonoBehaviour:
   maxJumpTime: 5
   isJumping: 0
   maxFallingSpeed: 0
+  dashSpeed: 100
+  dashDuration: 0.1
+  dashCooldown: 0.5
+  maxDashCount: 1
+  dashCount: 1
+  dashTimer: 0
+  cooldownTimer: 0
   timeToStartRunning: 0
   timeToLongFall: 5
 --- !u!114 &1441958089
@@ -889,6 +906,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movementInput: {x: 0, y: 0}
   isJumpButtonPressed: 0
+  isDashButtonPressed: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

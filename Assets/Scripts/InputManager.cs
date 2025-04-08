@@ -11,6 +11,7 @@ public class InputManager : MonoBehaviour
 
     public Vector2 movementInput;
     public bool isJumpButtonPressed;
+    public bool isDashButtonPressed;
     private void Awake()
     {
         if(Instance == null)
@@ -31,6 +32,8 @@ public class InputManager : MonoBehaviour
         playerInput.PlayerActions.Movement.canceled += (ctx) => movementInput = ctx.ReadValue<Vector2>();
         playerInput.PlayerActions.Jump.started += (ctx) => isJumpButtonPressed = true;
         playerInput.PlayerActions.Jump.canceled += (ctx) => isJumpButtonPressed = false;
+        playerInput.PlayerActions.Dash.started += (ctx) => isDashButtonPressed = true;
+        playerInput.PlayerActions.Dash.canceled += (ctx) => isDashButtonPressed = false;
     }
 
     

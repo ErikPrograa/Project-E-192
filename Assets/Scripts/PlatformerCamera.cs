@@ -6,6 +6,7 @@ public class PlatformerCamera : MonoBehaviour
 {
     public Transform target;
     public Vector3 offset = new Vector3(0, 3, -6);
+    PlayerController playerController;
     public float smoothSpeed = 0.2f;
     public float sensitivity = 120f;
 
@@ -20,6 +21,7 @@ public class PlatformerCamera : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        playerController = target.GetComponentInParent<PlayerController>(); 
     }
     private void Update()
     {
@@ -32,7 +34,11 @@ public class PlatformerCamera : MonoBehaviour
     {
         Quaternion rotation = Quaternion.Euler(rotationY, rotationX, 0);
         Vector3 desiredPosition = target.position + rotation * offset;
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+        if (!playerController.isDashing)
+        {
+            transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+
+        }
 
     }
     private void LateUpdate()

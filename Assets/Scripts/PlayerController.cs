@@ -48,7 +48,8 @@ public class PlayerController : MonoBehaviour
     float currentTimeToLongFall;
 
     [Header("Player Flags")]
-    bool isDashing;
+    bool isInteracting;
+    public bool isDashing;
     bool isGrounded;
     bool isLongFalling;
     bool canJump = true;
@@ -89,16 +90,23 @@ public class PlayerController : MonoBehaviour
     {
         GroundCheck();
         GetCameraDirections();
-        HandleMovement();
-        HandlePlayerRotation();
+        if (!isInteracting)
+        {
+            HandleMovement();
+            HandlePlayerRotation();
+            HandleJump();
+        }
         HandleAnimations();
-        HandleJump();
         HandleTimers();
         HandleDash();
+        isInteracting = isDashing;
     }
     private void FixedUpdate()
     {
-        UpdatePhysics();
+        if (!isInteracting)
+        {
+            UpdatePhysics();
+        }
     }
     void GetCameraDirections()
     {
@@ -146,40 +154,40 @@ public class PlayerController : MonoBehaviour
     }
     private void HandleGravity()
     {
-        isFalling = rb.velocity.y <= 0.0f || !inputManager.isJumpButtonPressed;
-        float fallMultiplier = 5.0f;
-        if (isGrounded)
-        {
-            targetVerticalVelocity = groundedGravity;
-            isLongFalling = false;
+        
+            isFalling = rb.velocity.y <= 0.0f || !inputManager.isJumpButtonPressed;
+            float fallMultiplier = 5.0f;
+            if (isGrounded)
+            {
+                targetVerticalVelocity = groundedGravity;
+                isLongFalling = false;
 
-        }
-        else if (isFalling)
-        {
-            float previousYVelocity = targetVerticalVelocity;
-            float newYVelocity = targetVerticalVelocity + (gravity * fallMultiplier * Time.deltaTime);
-            float nextYVelocity = (previousYVelocity + newYVelocity) * .5f;
-            targetVerticalVelocity = nextYVelocity;
+            }
+            else if (isFalling)
+            {
+                float previousYVelocity = targetVerticalVelocity;
+                float newYVelocity = targetVerticalVelocity + (gravity * fallMultiplier * Time.deltaTime);
+                float nextYVelocity = (previousYVelocity + newYVelocity) * .5f;
+                targetVerticalVelocity = nextYVelocity;
 
-        }
-        else
-        {
-            float previousYVelocity = targetVerticalVelocity;
-            float newYVelocity = targetVerticalVelocity + (gravity * Time.deltaTime);
-            float nextYVelocity = (previousYVelocity + newYVelocity) * 0.5f;
-            targetVerticalVelocity = nextYVelocity;
-        }
+            }
+            else
+            {
+                float previousYVelocity = targetVerticalVelocity;
+                float newYVelocity = targetVerticalVelocity + (gravity * Time.deltaTime);
+                float nextYVelocity = (previousYVelocity + newYVelocity) * 0.5f;
+                targetVerticalVelocity = nextYVelocity;
+            }
+        
+        
+        
     }
     void HandleMovement()
     {
         moveDirection = camForward * inputManager.movementInput.y + mainCamera.transform.right * inputManager.movementInput.x;
         if (moveDirection.sqrMagnitude > 1f)
             moveDirection.Normalize();
-
-        if (!isDashing)
-        {
-            targetHorizontalVelocity = moveDirection * runningSpeed;
-        }
+        targetHorizontalVelocity = moveDirection * runningSpeed;
 
 
     }
@@ -220,12 +228,13 @@ public class PlayerController : MonoBehaviour
     }
     void StartDash()
     {
+        rb.velocity = Vector3.zero;
 
         isDashing = true;
         dashTimer = dashDuration;
         dashCount--;
-
-        targetHorizontalVelocity = moveDirection * runningSpeed* dashSpeed * Time.deltaTime;
+        Vector3 dashDirection = new Vector3(moveDirection.x, 0f, moveDirection.z);
+        rb.AddForce(dashDirection * runningSpeed * dashSpeed);
     }
     void EndDash()
     {
@@ -243,8 +252,10 @@ public class PlayerController : MonoBehaviour
         {
             appliedVelocity = maxFallingSpeed;
         }
+        
         rb.velocity = new Vector3(targetHorizontalVelocity.x, appliedVelocity, targetHorizontalVelocity.z);
         HandleGravity();
+        
     }
 
     

@@ -683,15 +683,16 @@ MonoBehaviour:
   maxJumpTime: 5
   isJumping: 0
   maxFallingSpeed: 0
-  dashSpeed: 100
-  dashDuration: 0.1
-  dashCooldown: 0.5
+  dashSpeed: 200
+  dashDuration: 0.2
+  dashCooldown: 1
   maxDashCount: 1
   dashCount: 1
   dashTimer: 0
   cooldownTimer: 0
   timeToStartRunning: 0
   timeToLongFall: 5
+  isDashing: 0
 --- !u!114 &1441958089
 MonoBehaviour:
   m_ObjectHideFlags: 0

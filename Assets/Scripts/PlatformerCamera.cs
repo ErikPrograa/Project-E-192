@@ -34,11 +34,14 @@ public class PlatformerCamera : MonoBehaviour
     {
         Quaternion rotation = Quaternion.Euler(rotationY, rotationX, 0);
         Vector3 desiredPosition = target.position + rotation * offset;
+        
+
         if (!playerController.isDashing)
         {
             transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
-
         }
+
+        
 
     }
     private void LateUpdate()

@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float initialJumpVelocity;
     [SerializeField] float maxJumpHeight;
     [SerializeField] float maxJumpTime;
-    [SerializeField] bool isJumping;
+    public bool isJumping;
     [SerializeField] float maxFallingSpeed;
     [SerializeField] int jumpCount;
     Dictionary<int,float> initialJumpVelocities = new Dictionary<int, float>();
@@ -224,14 +224,22 @@ public class PlayerController : MonoBehaviour
     {
         if (!isJumping && isGrounded && inputManager.isJumpButtonPressed)
         {
-            if(jumpCount<3 && currentJumpResetRoutine !=null)
+
+            if (jumpCount < 3 && currentJumpResetRoutine != null)
             {
                 StopCoroutine(currentJumpResetRoutine);
+
             }
+            else if (jumpCount >= 3 && currentJumpResetRoutine != null)
+            {
+                StopCoroutine(currentJumpResetRoutine);
+                jumpCount = 0;
+            }
+            jumpCount += 1;
             isJumping = true;
             isJumpAnimating = true;
-            jumpCount += 1;
             targetVerticalVelocity = initialJumpVelocities[jumpCount] * 0.5f;
+
         }
         else if (!inputManager.isJumpButtonPressed && isJumping && isGrounded)
         {

@@ -304,9 +304,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 685957847}
-  offset: {x: 0, y: 4, z: -11}
+  offset: {x: 0, y: 4, z: -14}
   smoothSpeed: 0.21
-  sensitivity: 120
+  sensitivity: 240
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -683,6 +683,7 @@ MonoBehaviour:
   maxJumpTime: 5
   isJumping: 0
   maxFallingSpeed: 0
+  jumpCount: 0
   dashSpeed: 200
   dashDuration: 0.2
   dashCooldown: 1

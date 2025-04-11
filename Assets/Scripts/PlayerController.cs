@@ -63,6 +63,12 @@ public class PlayerController : MonoBehaviour
     bool isFalling;
     bool isJumpAnimating;
 
+    //Getters
+    public bool IsGrounded() 
+    {
+        return isGrounded;
+    }
+
     [Header("Movement Vectors | Values")]
     float targetVerticalVelocity;
     Vector3 targetHorizontalVelocity;

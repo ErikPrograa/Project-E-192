@@ -28,20 +28,13 @@ public class PlatformerCamera : MonoBehaviour
         rotationY -= Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
         rotationX += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
         rotationY = Mathf.Clamp(rotationY, -60f, 60f);
-        HandleCameraFollowPlaye();
+        HandleCameraFollowPlayer();
     }
     private void FixedUpdate()
     {
         Quaternion rotation = Quaternion.Euler(rotationY, rotationX, 0);
-        Vector3 desiredPosition = target.position + rotation * offset;
-        
-
-        if (!playerController.isDashing)
-        {
-            transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
-        }
-
-        
+        Vector3 desiredPosition = Vector3.Lerp(transform.position ,target.position + rotation * offset,smoothSpeed);
+        transform.position = desiredPosition;
 
     }
     private void LateUpdate()
@@ -50,12 +43,12 @@ public class PlatformerCamera : MonoBehaviour
 
     }
 
-    void HandleCameraFollowPlaye()
+    void HandleCameraFollowPlayer()
     {
     }
 
     void HandleCameraRotation()
     {
-        transform.LookAt(target.position + Vector3.up * 1.5f);
+        transform.LookAt(target.position);
     }
 }

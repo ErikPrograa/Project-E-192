@@ -304,9 +304,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 685957847}
-  offset: {x: 0, y: 4, z: -14}
-  smoothSpeed: 0.21
-  sensitivity: 240
+  distance: 12.19
+  height: 2
+  rotationSpeed: 5
+  smoothSpeed: 100
+  minPitch: -40
+  maxPitch: 85
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

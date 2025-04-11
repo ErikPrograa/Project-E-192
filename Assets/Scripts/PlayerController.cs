@@ -130,6 +130,9 @@ public class PlayerController : MonoBehaviour
         HandleTimers();
         HandleDash();
         isInteracting = isDashing;
+        Debug.Log("Is Falling " + isFalling);
+        Debug.Log("Is LongFalling " + isLongFalling);
+        Debug.Log(currentTimeToLongFall);
     }
     private void FixedUpdate()
     {
@@ -152,13 +155,15 @@ public class PlayerController : MonoBehaviour
 
     void GroundCheck()
     {
-        isGrounded = Physics.CheckSphere(groundCheckTransform.position, groundCheckRadius, groundCheckLayerMask);
+        isGrounded = Physics.CheckSphere(groundCheckTransform.position, groundCheckRadius, groundCheckLayerMask); 
+        
     }
     private void HandleAnimations()
     {
         animationManager.SetAnimatorFloat("MovementSpeed", InputManager.Instance.movementInput.magnitude, 0.1f);
         animationManager.SetAnimatorBool("IsJumping", isJumping && !isGrounded);
         animationManager.SetAnimatorBool("IsLongFalling", isLongFalling);
+        animationManager.SetAnimatorBool("IsFalling", isFalling);
 
     }
     private void HandleDash()
@@ -184,18 +189,19 @@ public class PlayerController : MonoBehaviour
     }
     private void HandleGravity()
     {
-        isFalling = rb.velocity.y <= 0.0f || !inputManager.isJumpButtonPressed;
         float fallMultiplier = 5.0f;
         if (isGrounded)
         {
+            isLongFalling = false;
+            isFalling= false;
+            currentTimeToLongFall = timeToLongFall;
             if (isJumpAnimating)
             {
                 currentJumpResetRoutine = StartCoroutine(JumpResetRoutine());
                 isJumpAnimating = false;
             }
             targetVerticalVelocity = groundedGravity;
-            isLongFalling = false;
-            
+
 
         }
         else if (isFalling)
@@ -208,6 +214,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            isFalling = rb.velocity.y < groundedGravity || (!inputManager.isJumpButtonPressed && !isGrounded);
             float previousYVelocity = targetVerticalVelocity;
             float newYVelocity = targetVerticalVelocity + (jumpGravities[jumpCount] * Time.deltaTime);
             float nextYVelocity = (previousYVelocity + newYVelocity) * 0.5f;
@@ -250,7 +257,6 @@ public class PlayerController : MonoBehaviour
         else if (!inputManager.isJumpButtonPressed && isJumping && isGrounded)
         {
             isJumping = false;
-            isLongFalling = false;
         }
 
     }

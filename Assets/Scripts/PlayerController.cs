@@ -22,11 +22,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float walkSpeed;
     [SerializeField] float rotationSpeed;
 
+    [Header("Jump variables")]
     [SerializeField] float initialJumpVelocity;
     [SerializeField] float maxJumpHeight;
     [SerializeField] float maxJumpTime;
     [SerializeField] bool isJumping;
     [SerializeField] float maxFallingSpeed;
+    [SerializeField] int jumpCount;
+    Dictionary<int,float> initialJumpVelocities = new Dictionary<int, float>();
+    Dictionary<int,float> jumpGravities = new Dictionary<int, float>();
+    Coroutine currentJumpResetRoutine = null;
+
+
     // Gravity variables
     float gravity = -2f;
     float groundedGravity = -0.05f;
@@ -54,6 +61,7 @@ public class PlayerController : MonoBehaviour
     bool isLongFalling;
     bool canJump = true;
     bool isFalling;
+    bool isJumpAnimating;
 
     [Header("Movement Vectors | Values")]
     float targetVerticalVelocity;
@@ -80,6 +88,22 @@ public class PlayerController : MonoBehaviour
         gravity = (-2 * maxJumpHeight) / Mathf.Pow(timeToApex, 2);
         initialJumpVelocity = (2 * maxJumpHeight) / timeToApex;
         maxFallingSpeed = -initialJumpVelocity;
+        float secondJumpGravity = (-2 * (maxJumpHeight + 2)) / Mathf.Pow((timeToApex * 1.25f), 2);
+        float secondJumpInitialVelocity = (2 * (maxJumpHeight + 2)) / (timeToApex * 1.25f);
+        float thirdJumpGravity = (-2 * (maxJumpHeight+4))/Mathf.Pow((timeToApex*1.5f),2);
+        float thirdJumpInitialVelocity = (2 * (maxJumpHeight + 4)) / (timeToApex * 1.5f);
+
+        initialJumpVelocities.Add(1, initialJumpVelocity);
+        initialJumpVelocities.Add(2,secondJumpInitialVelocity);
+        initialJumpVelocities.Add(3, thirdJumpInitialVelocity);
+
+        jumpGravities.Add(0, gravity);
+        jumpGravities.Add(1, gravity);
+        jumpGravities.Add(2, secondJumpGravity);
+        jumpGravities.Add(3, thirdJumpGravity);
+
+
+
     }
     private void Start()
     {
@@ -127,7 +151,7 @@ public class PlayerController : MonoBehaviour
     private void HandleAnimations()
     {
         animationManager.SetAnimatorFloat("MovementSpeed", InputManager.Instance.movementInput.magnitude, 0.1f);
-        animationManager.SetAnimatorBool("IsJumping", isJumping || !isGrounded);
+        animationManager.SetAnimatorBool("IsJumping", isJumping && !isGrounded);
         animationManager.SetAnimatorBool("IsLongFalling", isLongFalling);
 
     }
@@ -154,30 +178,35 @@ public class PlayerController : MonoBehaviour
     }
     private void HandleGravity()
     {
-        
-            isFalling = rb.velocity.y <= 0.0f || !inputManager.isJumpButtonPressed;
-            float fallMultiplier = 5.0f;
-            if (isGrounded)
+        isFalling = rb.velocity.y <= 0.0f || !inputManager.isJumpButtonPressed;
+        float fallMultiplier = 5.0f;
+        if (isGrounded)
+        {
+            if (isJumpAnimating)
             {
-                targetVerticalVelocity = groundedGravity;
-                isLongFalling = false;
+                currentJumpResetRoutine = StartCoroutine(JumpResetRoutine());
+                isJumpAnimating = false;
+            }
+            targetVerticalVelocity = groundedGravity;
+            isLongFalling = false;
+            
 
-            }
-            else if (isFalling)
-            {
-                float previousYVelocity = targetVerticalVelocity;
-                float newYVelocity = targetVerticalVelocity + (gravity * fallMultiplier * Time.deltaTime);
-                float nextYVelocity = (previousYVelocity + newYVelocity) * .5f;
-                targetVerticalVelocity = nextYVelocity;
+        }
+        else if (isFalling)
+        {
+            float previousYVelocity = targetVerticalVelocity;
+            float newYVelocity = targetVerticalVelocity + (jumpGravities[jumpCount] * fallMultiplier * Time.deltaTime);
+            float nextYVelocity = (previousYVelocity + newYVelocity) * .5f;
+            targetVerticalVelocity = nextYVelocity;
 
-            }
-            else
-            {
-                float previousYVelocity = targetVerticalVelocity;
-                float newYVelocity = targetVerticalVelocity + (gravity * Time.deltaTime);
-                float nextYVelocity = (previousYVelocity + newYVelocity) * 0.5f;
-                targetVerticalVelocity = nextYVelocity;
-            }
+        }
+        else
+        {
+            float previousYVelocity = targetVerticalVelocity;
+            float newYVelocity = targetVerticalVelocity + (jumpGravities[jumpCount] * Time.deltaTime);
+            float nextYVelocity = (previousYVelocity + newYVelocity) * 0.5f;
+            targetVerticalVelocity = nextYVelocity;
+        }
         
         
         
@@ -195,15 +224,26 @@ public class PlayerController : MonoBehaviour
     {
         if (!isJumping && isGrounded && inputManager.isJumpButtonPressed)
         {
+            if(jumpCount<3 && currentJumpResetRoutine !=null)
+            {
+                StopCoroutine(currentJumpResetRoutine);
+            }
             isJumping = true;
-            targetVerticalVelocity = initialJumpVelocity * 0.5f;
+            isJumpAnimating = true;
+            jumpCount += 1;
+            targetVerticalVelocity = initialJumpVelocities[jumpCount] * 0.5f;
         }
         else if (!inputManager.isJumpButtonPressed && isJumping && isGrounded)
         {
             isJumping = false;
-
+            isLongFalling = false;
         }
 
+    }
+    IEnumerator JumpResetRoutine()
+    {
+        yield return new WaitForSeconds(1.5f);
+        jumpCount = 0;
     }
     void HandlePlayerRotation()
     {
@@ -218,12 +258,17 @@ public class PlayerController : MonoBehaviour
     {
         if (isFalling)
         {
-            currentTimeToLongFall -= Time.deltaTime;
-            if (currentTimeToLongFall < 0 && !isLongFalling)
+            if(!isLongFalling)
             {
-                currentTimeToLongFall = timeToLongFall;
-                isLongFalling = true;
+                currentTimeToLongFall -= Time.deltaTime;
+
+                if (currentTimeToLongFall < 0)
+                {
+                    currentTimeToLongFall = timeToLongFall;
+                    isLongFalling = true;
+                }
             }
+            
         }
     }
     void StartDash()

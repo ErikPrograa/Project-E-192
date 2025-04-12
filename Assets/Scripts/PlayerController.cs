@@ -63,6 +63,8 @@ public class PlayerController : MonoBehaviour
     bool isFalling;
     bool isJumpAnimating;
 
+    [SerializeField] Transform gravityTarget;
+
     //Getters
     public bool IsGrounded() 
     {
@@ -130,9 +132,7 @@ public class PlayerController : MonoBehaviour
         HandleTimers();
         HandleDash();
         isInteracting = isDashing;
-        Debug.Log("Is Falling " + isFalling);
-        Debug.Log("Is LongFalling " + isLongFalling);
-        Debug.Log(currentTimeToLongFall);
+        
     }
     private void FixedUpdate()
     {

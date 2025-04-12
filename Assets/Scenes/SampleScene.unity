@@ -527,7 +527,7 @@ GameObject:
   - component: {fileID: 906156160}
   - component: {fileID: 906156159}
   - component: {fileID: 906156158}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -541,7 +541,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 906156157}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 62566d2db42f4874daa15c301bd2c91e, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -810,6 +810,13 @@ MonoBehaviour:
   timeToLongFall: 5
   isDashing: 0
   gravityTarget: {fileID: 1633182237}
+  wallRunDuration: 3
+  wallRunLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  wallCheckDistance: 1
+  wallRunGravity: -0.5
+  wallRunSpeed: 6
 --- !u!114 &1441958089
 MonoBehaviour:
   m_ObjectHideFlags: 0

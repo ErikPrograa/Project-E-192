@@ -48,12 +48,10 @@ public class PlatformerCamera : MonoBehaviour
 
     private void Update()
     {
-        // Aquí podrías agregar lógica adicional si fuese necesario.
     }
 
     private void FixedUpdate()
     {
-        // Se suele trabajar la física en FixedUpdate, pero en este caso toda la lógica se aplica en LateUpdate.
     }
 
     private void LateUpdate()
@@ -88,13 +86,13 @@ public class PlatformerCamera : MonoBehaviour
         }
 
         // Interpolar suavemente la distancia actual hacia la deseada para evitar cambios bruscos
-        currentDistance = Mathf.Lerp(currentDistance, desiredDistance, Time.deltaTime * smoothSpeed);
+        currentDistance = Mathf.Lerp(currentDistance, desiredDistance, Time.fixedDeltaTime * smoothSpeed);
 
         // Calcula la posición final de la cámara usando la distancia ajustada
         Vector3 finalPosition = pivot - rotation * Vector3.forward * currentDistance;
 
         // Aplica suavizado en la posición de la cámara
-        transform.position = Vector3.Lerp(transform.position, finalPosition, Time.deltaTime * smoothSpeed);
+        transform.position = Vector3.Lerp(transform.position, finalPosition, Time.fixedDeltaTime * smoothSpeed);
 
         // La cámara siempre mira hacia el pivote
         transform.LookAt(pivot);

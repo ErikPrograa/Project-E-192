@@ -63,11 +63,7 @@ public class PlayerController : MonoBehaviour
     bool isFalling;
     bool isJumpAnimating;
 
-    //Getters
-    public bool IsGrounded() 
-    {
-        return isGrounded;
-    }
+    [SerializeField] Transform gravityTarget;
 
     [Header("Movement Vectors | Values")]
     float targetVerticalVelocity;
@@ -75,6 +71,27 @@ public class PlayerController : MonoBehaviour
     Vector3 camForward;
     Vector3 camRight;
     Vector3 moveDirection;
+
+    [Header("Wall Run")]
+    [SerializeField] float wallRunDuration = 3f;
+    [SerializeField] LayerMask wallRunLayerMask;
+    [SerializeField] float wallCheckDistance = 1f;
+    [SerializeField] float wallRunGravity = -0.5f;
+    [SerializeField] float wallRunSpeed = 6f;
+    bool isWallRunning = false;
+    float wallRunTimer;
+    Vector3 wallNormal;
+
+    //Getters
+    public bool IsGrounded() 
+    {
+        return isGrounded;
+    }
+    bool CheckWall(out RaycastHit hitInfo)
+    {
+        return Physics.Raycast(transform.position, transform.right, out hitInfo, wallCheckDistance, wallRunLayerMask) || Physics.Raycast(transform.position, -transform.right, out hitInfo, wallCheckDistance, wallRunLayerMask);
+    }
+    
     private void Awake()
     {
         audioSource = GetComponentInChildren(typeof(AudioSource)) as AudioSource;
@@ -129,7 +146,9 @@ public class PlayerController : MonoBehaviour
         HandleAnimations();
         HandleTimers();
         HandleDash();
+        HandleWallRun();
         isInteracting = isDashing;
+        
     }
     private void FixedUpdate()
     {
@@ -138,6 +157,7 @@ public class PlayerController : MonoBehaviour
             UpdatePhysics();
         }
     }
+    
     void GetCameraDirections()
     {
         camForward = mainCamera.transform.forward;
@@ -152,13 +172,15 @@ public class PlayerController : MonoBehaviour
 
     void GroundCheck()
     {
-        isGrounded = Physics.CheckSphere(groundCheckTransform.position, groundCheckRadius, groundCheckLayerMask);
+        isGrounded = Physics.CheckSphere(groundCheckTransform.position, groundCheckRadius, groundCheckLayerMask); 
+        
     }
     private void HandleAnimations()
     {
         animationManager.SetAnimatorFloat("MovementSpeed", InputManager.Instance.movementInput.magnitude, 0.1f);
         animationManager.SetAnimatorBool("IsJumping", isJumping && !isGrounded);
         animationManager.SetAnimatorBool("IsLongFalling", isLongFalling);
+        animationManager.SetAnimatorBool("IsFalling", isFalling);
 
     }
     private void HandleDash()
@@ -184,18 +206,24 @@ public class PlayerController : MonoBehaviour
     }
     private void HandleGravity()
     {
-        isFalling = rb.velocity.y <= 0.0f || !inputManager.isJumpButtonPressed;
+        if (isWallRunning)
+        {
+            targetVerticalVelocity = wallRunGravity;
+            return;
+        }
         float fallMultiplier = 5.0f;
         if (isGrounded)
         {
+            isLongFalling = false;
+            isFalling= false;
+            currentTimeToLongFall = timeToLongFall;
             if (isJumpAnimating)
             {
                 currentJumpResetRoutine = StartCoroutine(JumpResetRoutine());
                 isJumpAnimating = false;
             }
             targetVerticalVelocity = groundedGravity;
-            isLongFalling = false;
-            
+
 
         }
         else if (isFalling)
@@ -208,14 +236,15 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            isFalling = rb.velocity.y < groundedGravity || (!inputManager.isJumpButtonPressed && !isGrounded);
             float previousYVelocity = targetVerticalVelocity;
             float newYVelocity = targetVerticalVelocity + (jumpGravities[jumpCount] * Time.deltaTime);
             float nextYVelocity = (previousYVelocity + newYVelocity) * 0.5f;
             targetVerticalVelocity = nextYVelocity;
         }
         
-        
-        
+
+
     }
     void HandleMovement()
     {
@@ -250,10 +279,50 @@ public class PlayerController : MonoBehaviour
         else if (!inputManager.isJumpButtonPressed && isJumping && isGrounded)
         {
             isJumping = false;
-            isLongFalling = false;
         }
 
     }
+    #region Wall Run
+    void StartWallRun()
+    {
+        isWallRunning = true;
+        wallRunTimer = wallRunDuration;
+
+        // Ignorar la gravedad fuerte al caer
+        rb.useGravity = false;
+
+        // Dar el impulso hacia adelante en direccion del movimiento (opcional)
+        Vector3 forwardAlongWall = Vector3.Cross(wallNormal, Vector3.up);
+        rb.velocity = forwardAlongWall * wallRunSpeed;
+    }
+
+    void HandleWallRun()
+    {
+        if(!isGrounded && !isWallRunning && rb.velocity.y <0f && inputManager.isJumpButtonPressed)
+        {
+            if(CheckWall(out RaycastHit hit))
+            {
+                wallNormal = hit.normal;
+                StartWallRun();
+            }
+        }
+        if (isWallRunning)
+        {
+            wallRunTimer -= Time.deltaTime;
+            
+            // Cancelar wall run si se acaba el tiempo o el jugador deja de presionar salto
+            if(wallRunTimer <=0f || !inputManager.isJumpButtonPressed || isGrounded)
+            {
+                EndWallRun();
+            }
+        }
+    }
+    void EndWallRun()
+    {
+        isWallRunning = false;
+        rb.useGravity = true;
+    }
+    #endregion
     IEnumerator JumpResetRoutine()
     {
         yield return new WaitForSeconds(1.5f);
@@ -295,6 +364,9 @@ public class PlayerController : MonoBehaviour
         Vector3 dashDirection = new Vector3(moveDirection.x, 0f, moveDirection.z);
         rb.AddForce(dashDirection * runningSpeed * dashSpeed);
     }
+    
+
+
     void EndDash()
     {
         isDashing = false;
